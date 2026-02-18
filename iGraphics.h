@@ -27,9 +27,11 @@ int iAnimCount=0;
 int iAnimDelays[10];
 int iAnimPause[10];
 
+unsigned int keyPressed[512];
+unsigned int specialKeyPressed[512];
+
 void iDraw();
-void iKeyboard(unsigned char);
-void iSpecialKeyboard(unsigned char);
+void fixedUpdate();
 void iMouseMove(int, int);
 void iPassiveMouseMove(int, int);
 void iMouse(int button, int state, int x, int y);
@@ -44,6 +46,15 @@ static void  __stdcall iA6(HWND,unsigned int, unsigned int, unsigned long){if(!i
 static void  __stdcall iA7(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[7])iAnimFunction[7]();}
 static void  __stdcall iA8(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[8])iAnimFunction[8]();}
 static void  __stdcall iA9(HWND,unsigned int, unsigned int, unsigned long){if(!iAnimPause[9])iAnimFunction[9]();}
+static void  __stdcall keypressHandler(HWND, unsigned int, unsigned int, unsigned long){ fixedUpdate(); }
+
+int isKeyPressed(unsigned char key) {
+	return keyPressed[key];
+}
+
+int isSpecialKeyPressed(unsigned char key) {
+	return specialKeyPressed[key];
+}
 
 int iSetTimer(int msec, void (*f)(void))
 {
@@ -212,7 +223,7 @@ void iText(GLdouble x, GLdouble y, char *str, void* font=GLUT_BITMAP_8_BY_13)
     glRasterPos3d(x, y, 0);
     int i;
     for (i=0; str[i]; i++) {
-        glutBitmapCharacter(font, str[i]); //,GLUT_BITMAP_8_BY_13, c
+        glutBitmapCharacter(font, str[i]); //,GLUT_BITMAP_8_BY_13, GLUT_BITMAP_TIMES_ROMAN_24
     }
 }
 
@@ -452,15 +463,26 @@ void animFF(void)
     glutPostRedisplay();
 }
 
+void keyboardHandlerUp1FF(unsigned char key, int x, int y)
+{
+	keyPressed[key] = 0;
+    glutPostRedisplay();
+}
+void keyboardHandlerUp2FF(int key, int x, int y)
+{
+	specialKeyPressed[key] = 0;
+    glutPostRedisplay();
+}
+
 void keyboardHandler1FF(unsigned char key, int x, int y)
 {
-    iKeyboard(key);
-    glutPostRedisplay();
+	keyPressed[key] = 1;
+	glutPostRedisplay();
 }
 void keyboardHandler2FF(int key, int x, int y)
 {
-    iSpecialKeyboard(key);
-    glutPostRedisplay();
+	specialKeyPressed[key] = 1;
+	glutPostRedisplay();
 }
 
 void mouseMoveHandlerFF(int mx, int my)
@@ -491,8 +513,10 @@ void mouseHandlerFF(int button, int state, int x, int y)
     glFlush();
 }
 
-void iInitialize(int width=500, int height=500, char *title="iGraphics")
+void iInitialize(int width=500, int height=500, char *title="iGraphics", int keyboardSamplingRate = 16)
 {
+	SetTimer(0, 0, keyboardSamplingRate, keypressHandler);
+
     iScreenHeight = height;
     iScreenWidth = width;
 
@@ -517,6 +541,8 @@ void iStart()
     glutDisplayFunc(displayFF) ;
     glutKeyboardFunc(keyboardHandler1FF); //normal
     glutSpecialFunc(keyboardHandler2FF); //special keys
+	glutKeyboardUpFunc(keyboardHandlerUp1FF);
+	glutSpecialUpFunc(keyboardHandlerUp2FF);
     glutMouseFunc(mouseHandlerFF);
     glutMotionFunc(mouseMoveHandlerFF);
 	glutPassiveMotionFunc(mousePassiveMoveHandlerFF);
