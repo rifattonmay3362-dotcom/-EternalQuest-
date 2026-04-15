@@ -67,11 +67,6 @@ Challenges & Solutions
 - Animation flicker → Used multiple timers
 - Save corruption → Structured binary file system
 
-Team Members
-- Orion Moin – Player system, animation, shooting
-- Md. Rifat Hossain Tonmay – Enemy AI, movement, bombs
-- Habibullah Usman – Collision, background, UI
-
 Development Workflow
 - Used GitHub for version control
 - Worked with branches and pull requests
